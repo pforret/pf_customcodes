@@ -99,7 +99,7 @@ function pf_all_taxos($atts){
     if($only)   $filter_only=explode(",",$only);
 
     $filter_except=false;
-    if(except)   $filter_except=explode(",",$except);
+    if($except)   $filter_except=explode(",",$except);
 
     $args = array(
         'public'   => true,
@@ -133,14 +133,12 @@ function pf_all_taxos($atts){
     }
     switch($format){
         case "dl":
+	$html.="<dl $styleattrib>";
             foreach($links as $taxonomy => $links2){
-                $html.="<dl $styleattrib>";
-                $html.="<dt>" . ucfirst($taxonomy) . ": </dt>";
-                foreach($links2 as $link){
-                    $html.="<dd>$link</dd>";
-                }
-                $html.="</dl>";
+                $html.="<dt>" . ucfirst($taxonomy) . ": </dt><dd>";
+		$html.="<dd>" . implode(" &bull; ",$links2) . "</dd>\n";
             }
+	$html.="</dl>";
             break;
 
         case "table":
