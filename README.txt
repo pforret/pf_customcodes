@@ -28,7 +28,12 @@ e.g.
 
 == Frequently Asked Questions ==
 
-= A question that someone might have =
+= What are the shortcodes? =
+
+* [pf_post_taxos]
+* [pf_all_taxos]
+* [pf_all_posts]
+* [pf_post_fields]
 
 An answer to that question.
 
