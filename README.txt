@@ -18,10 +18,6 @@ This is the long description.  No limit, and you can use Markdown (as well as in
 
 == Installation ==
 
-This section describes how to install the plugin and get it working.
-
-e.g.
-
 1. Upload `pf_customcodes.php` to the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
 1. Place `<?php do_action('plugin_name_hook'); ?>` in your templates
@@ -35,11 +31,6 @@ e.g.
 * [pf_all_posts]
 * [pf_post_fields]
 
-An answer to that question.
-
-= What about foo bar? =
-
-Answer to foo bar dilemma.
 
 == Screenshots ==
 
