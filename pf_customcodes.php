@@ -147,21 +147,12 @@ function pf_all_taxos($atts){
     $html="";
     switch($format){
         case "dl":
-<<<<<<< HEAD
 			$html.="<dl $styleattrib>";
 					foreach($links as $taxonomy => $links2){
 						$html.="<dt>" . ucfirst($taxonomy) . ": </dt><dd>";
 						$html.="<dd>" . implode(" &bull; ",$links2) . "</dd>\n";
 					}
 			$html.="</dl>";
-=======
-	        $html.="<dl $styleattrib>";
-            foreach($links as $taxonomy => $links2){
-                $html.="<dt>" . ucfirst($taxonomy) . ": </dt><dd>";
-		        $html.="<dd>" . implode(" &bull; ",$links2) . "</dd>\n";
-            }
-	        $html.="</dl>";
->>>>>>> 6ea2ce447eb9981a12f0d22bbbbab96b368f8cc2
             break;
 
         case "table":
