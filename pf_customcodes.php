@@ -93,6 +93,7 @@ function pf_all_taxos($atts){
         'except' => '',
         'format' => 'p',
         'style' => '',
+        'with_count' => 0,
     ), $atts ) );
 
     $filter_only=false;
@@ -109,11 +110,13 @@ function pf_all_taxos($atts){
     $operator = 'and'; // 'and' or 'or'
     $taxonomies = get_taxonomies( $args, $output, $operator );
     $links=Array();
+    $total=Array();
     if ( $taxonomies ) {
         foreach ( $taxonomies  as $taxonomy ) {
             if($filter_only AND !in_array($taxonomy,$filter_only))  continue;
             if($filter_except AND in_array($taxonomy,$filter_except))  continue;
             $links[$taxonomy]=Array();
+            $total[$taxonomy]=0;
             $terms = get_terms( array(
                 'taxonomy' => $taxonomy,
                 'hide_empty' => true,
@@ -122,7 +125,12 @@ function pf_all_taxos($atts){
             foreach($terms as $term){
                 $term_name=$term->name;
                 $term_link=get_term_link($term);
-                $links[$taxonomy][]="<a href='$term_link'>$term_name</a>";
+				$count="";
+				if($with_count){
+					$count=" <sup>(" . $term->count . ")</sup>";
+				}
+				$total[$taxonomy]+=$term->count;
+                $links[$taxonomy][]="<a href='$term_link'>$term_name</a>$count";
             }
         }
     }
@@ -133,12 +141,12 @@ function pf_all_taxos($atts){
     }
     switch($format){
         case "dl":
-	$html.="<dl $styleattrib>";
-            foreach($links as $taxonomy => $links2){
-                $html.="<dt>" . ucfirst($taxonomy) . ": </dt><dd>";
-		$html.="<dd>" . implode(" &bull; ",$links2) . "</dd>\n";
-            }
-	$html.="</dl>";
+			$html.="<dl $styleattrib>";
+					foreach($links as $taxonomy => $links2){
+						$html.="<dt>" . ucfirst($taxonomy) . ": </dt><dd>";
+						$html.="<dd>" . implode(" &bull; ",$links2) . "</dd>\n";
+					}
+			$html.="</dl>";
             break;
 
         case "table":
@@ -152,11 +160,50 @@ function pf_all_taxos($atts){
             }
             break;
 
+        case "bar":
+			$ColourValues = Array( 
+				"FF8888", "88FF88", "8888FF", "FFFF88", "FF88FF", "88FFFF",  
+				"808888", "888088", "888880", "808088", "800080", "008080", "808080", 
+				"C00000", "00C000", "0000C0", "C0C000", "C000C0", "00C0C0", "C0C0C0", 
+				"400000", "004000", "000040", "404000", "400040", "004040", "404040", 
+				"200000", "002000", "000020", "202000", "200020", "002020", "202020", 
+				"600000", "006000", "000060", "606000", "600060", "006060", "606060", 
+				"A00000", "00A000", "0000A0", "A0A000", "A000A0", "00A0A0", "A0A0A0", 
+				"E00000", "00E000", "0000E0", "E0E000", "E000E0", "00E0E0", "E0E0E0", 
+				);
+
+            foreach($links as $taxonomy => $links2){
+                $html.="<div $styleattrib>";
+				$legend="<b>" . ucfirst($taxonomy) . ": </b>";
+				$terms = get_terms( array(
+					'taxonomy' => $taxonomy,
+					'hide_empty' => true,
+				));
+				$i=0;
+				foreach($terms as $term){
+					$term_name=$term->name;
+					$term_link=get_term_link($term);
+					$width=round(500*$term->count/$total[$taxonomy]);
+					$color=$ColourValues[$i];
+					$percent="";
+					if($with_count){
+						$percent=round(100*$term->count/$total[$taxonomy])."%";
+					}
+
+                    $html.="<div style='float: left; height: 20px; width: ${width}px; background: #$color ; font-size: .75em; text-align: center'>$percent</div>\n";
+					$legend.="<span style='background: #$color'>&nbsp;&nbsp;&nbsp;</span> <a href='$term_link'>$term_name</a> &bull; ";
+					$i++;
+				}
+                $html.="<div style='clear: both'></div></div>";
+				$html.="<p>$legend</p>";
+            }
+            break;
+
         case "p":
         default:
             foreach($links as $taxonomy => $links2){
                 $html.="<p $styleattrib>";
-                $html.=ucfirst($taxonomy) . ": ";
+                $html.="<b>" . ucfirst($taxonomy) . "</b>: ";
                 $html.=implode(" &bull; ",$links2);
                 $html.="</p>";
             }
