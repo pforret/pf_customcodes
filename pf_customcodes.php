@@ -77,15 +77,20 @@ function run_pf_customcodes() {
 
 	$plugin = new Pf_customcodes();
 	$plugin->run();
-    add_shortcode( 'pf_test_shortcode', 'pf_test_shortcode' );
+
     add_shortcode( 'pf_all_taxos', 'pf_all_taxos' );
+    add_shortcode( 'pf_post_cfields', 'pf_post_cfields');
 
 
 }
 
-function pf_test_shortcode(){
-    return "Shortcode OK";
-}
+/**
+ * Show all custom taxonomies and all terms within each taxonomy.
+ *
+ * works with custom taxonomies from CPT UI plugin
+ *
+ * @since    1.0.0
+ */
 
 function pf_all_taxos($atts){
     extract( shortcode_atts( array(
@@ -101,6 +106,11 @@ function pf_all_taxos($atts){
 
     $filter_except=false;
     if($except)   $filter_except=explode(",",$except);
+
+    $styleattrib="";
+    if($style){
+        $styleattrib=" style='$style'";
+    }
 
     $args = array(
         'public'   => true,
@@ -135,18 +145,23 @@ function pf_all_taxos($atts){
         }
     }
     $html="";
-    $styleattrib="";
-    if($style){
-        $styleattrib=" style='$style'";
-    }
     switch($format){
         case "dl":
+<<<<<<< HEAD
 			$html.="<dl $styleattrib>";
 					foreach($links as $taxonomy => $links2){
 						$html.="<dt>" . ucfirst($taxonomy) . ": </dt><dd>";
 						$html.="<dd>" . implode(" &bull; ",$links2) . "</dd>\n";
 					}
 			$html.="</dl>";
+=======
+	        $html.="<dl $styleattrib>";
+            foreach($links as $taxonomy => $links2){
+                $html.="<dt>" . ucfirst($taxonomy) . ": </dt><dd>";
+		        $html.="<dd>" . implode(" &bull; ",$links2) . "</dd>\n";
+            }
+	        $html.="</dl>";
+>>>>>>> 6ea2ce447eb9981a12f0d22bbbbab96b368f8cc2
             break;
 
         case "table":
@@ -209,6 +224,123 @@ function pf_all_taxos($atts){
             }
     }
     return $html;
+}
+
+/**
+ * Show all custom fields for this post.
+ *
+ * works with custom fields from ACF plugin
+ *
+ * @since    1.0.0
+ */
+
+function pf_post_cfields($atts){
+    extract( shortcode_atts( array(
+        'only' => '',
+        'except' => '',
+        'format' => 'p',
+        'style' => '',
+        'sort' => 0,
+        'img_width' => 250,
+    ), $atts ) );
+
+    $filter_only=false;
+    if($only)   $filter_only=explode(",",$only);
+
+    $filter_except=false;
+    if($except)   $filter_except=explode(",",$except);
+
+    $styleattrib="";
+    if($style){
+        $styleattrib=" style='$style'";
+    }
+    
+    $fieldobjs=get_field_objects();
+    $fields=Array();
+    if( $fieldobjs ) {
+        if($sort)   ksort($fieldobjs);
+        foreach( $fieldobjs as $field_name => $fieldobj )
+        {
+            if($filter_only AND !in_array($field_name,$filter_only))  continue;
+            if($filter_except AND in_array($field_name,$filter_except))  continue;
+
+            switch($fieldobj['type']){
+                case "url":
+                    if(!$fieldobj['value'])	continue;
+                    $link_url=$fieldobj['value'];
+                    $link_short=str_replace(Array("http://","https://"),"",$link_url);
+                    $link_short=preg_replace("(\?.*$)","",$link_short);
+                    $fields[]=Array(
+                        "label" => $fieldobj['label'],
+                        "value" => "<a href='$link_url'>$link_short</a>",
+                        "type" => $fieldobj['type'],
+                    );
+                    break;
+
+                case "true_false":
+                    if($fieldobj['value']==1){
+                        $boolean="<b style='color:green'>Yes</b>";
+                    } else {
+                        $boolean="<i>No</i>";
+                    }
+                    $fields[]=Array(
+                        "label" => $fieldobj['label'],
+                        "value" => $boolean,
+                        "type" => $fieldobj['type'],
+                    );
+                    break;
+
+                case "image":
+                    if(!$fieldobj['value'])	continue;
+                    $fields[]= [
+                        "label" => $fieldobj['label'],
+                        "value" => "<img width='$img_width' src='" . $fieldobj['value'] . "' />",
+                        "type" => $fieldobj['type'],
+                    ];
+                    break;
+
+                default:
+                    if(!$fieldobj['value'])	continue;
+                    $fields[]=Array(
+                        "label" => $fieldobj['label'],
+                        "value" => $fieldobj['value'],
+                        "type" => $fieldobj['type'],
+                    );
+            }
+        }
+    }
+    if($fields){
+        $html="";
+        switch($format){
+            case "dl":
+                $html.="<dl $styleattrib>";
+                foreach($fields as $field){
+                    $html.="<dt>" . $field["label"] . ": </dt>";
+                    $html.="<dd>" . $field["value"] . "</dd>\n";
+                }
+                $html.="</dl>\n";
+                break;
+
+            case "table":
+                $html.="<table $styleattrib>";
+                foreach($fields as $field){
+                    $html.="<tr><th>" . $field["label"] . "</th><td>" . $field["value"] . "</td></tr>";
+                }
+                $html.="</table>";
+                break;
+
+            case "p":
+            default:
+                foreach($fields as $field){
+                    $html.="<p $styleattrib>";
+                    $html.="<b>" . $field["label"] . "</b>: " . $field["value"];
+                    $html.="</p>";
+                }
+        }
+        return $html;
+    } else {
+        return "";
+    }
 }
 
 run_pf_customcodes();
