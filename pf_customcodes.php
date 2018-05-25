@@ -222,6 +222,8 @@ function pf_all_posts( $atts) {
     extract( shortcode_atts( array(
         'type' => '',
 		'style'	=> '',
+		'format'	=> 'list',
+		'fields'	=> '',
 		'separator'	=> ' &bull; ',
     ), $atts ) );
   
@@ -236,15 +238,49 @@ function pf_all_posts( $atts) {
 	);
 	$type_posts = get_posts( $args ); 
 	if($type_posts){
-		$string1.="<div style='$style'>";
-		$a_links=Array();
-		foreach($type_posts as $type_post){
-			$post_title=$type_post->post_title;
-			$post_link=get_post_permalink($type_post);
-			$a_links[]="<a href='$post_link'>$post_title</a>";
+		switch($format){
+			case "table":
+			$string1.="<table style='$style'>";
+			$a_links=Array();
+			$fieldnames=false;
+			if($fields){
+				$fieldnames=explode(",",$fields);
+				foreach($fieldnames as $i => $fieldname){
+					$fieldnames[$i]=trim($fieldname);
+				}
+			}
+			foreach($type_posts as $type_post){
+				$string1.="<tr>";
+				$post_title=$type_post->post_title;
+				$post_link=get_post_permalink($type_post);
+				$string1.="<th><a href='$post_link'>$post_title</a></th>";
+				if($fieldnames){
+					foreach($fieldnames as $fieldname){
+						$fielddata=get_field_object($fieldname, $type_post->ID);
+						if($fielddata){
+							$value=$fielddata['value'];
+							$string1.="<td>$value</td>";
+						} else {
+							$string1.="<td></td>";
+						};
+					}
+				}
+				$string1.="</tr>\n";
+			}
+			$string1.="</table>";
+			break;
+		
+			default:
+			$string1.="<div style='$style'>";
+			$a_links=Array();
+			foreach($type_posts as $type_post){
+				$post_title=$type_post->post_title;
+				$post_link=get_post_permalink($type_post);
+				$a_links[]="<a href='$post_link'>$post_title</a>";
+			}
+			$string1.=implode($separator,$a_links);
+			$string1.="</div>";
 		}
-		$string1.=implode($separator,$a_links);
-		$string1.="</div>";
 	}
 	return $string1;
 }
