@@ -79,6 +79,7 @@ function run_pf_customcodes() {
 	$plugin->run();
 
     add_shortcode( 'pf_all_taxos', 'pf_all_taxos' );
+    add_shortcode( 'pf_all_posts', 'pf_all_posts' );
     add_shortcode( 'pf_post_cfields', 'pf_post_cfields');
 
 
@@ -217,6 +218,37 @@ function pf_all_taxos($atts){
     return $html;
 }
 
+function pf_all_posts( $atts) {
+    extract( shortcode_atts( array(
+        'type' => '',
+		'style'	=> '',
+		'separator'	=> ' &bull; ',
+    ), $atts ) );
+  
+	$string1="";
+	$args = array(
+		'posts_per_page'   => 1000,
+		'post_type'        => $type,
+		'orderby'          => 'name',
+		'order'            => 'ASC',
+		'post_status'      => 'publish',
+		'suppress_filters' => true 
+	);
+	$type_posts = get_posts( $args ); 
+	if($type_posts){
+		$string1.="<div style='$style'>";
+		$a_links=Array();
+		foreach($type_posts as $type_post){
+			$post_title=$type_post->post_title;
+			$post_link=get_post_permalink($type_post);
+			$a_links[]="<a href='$post_link'>$post_title</a>";
+		}
+		$string1.=implode($separator,$a_links);
+		$string1.="</div>";
+	}
+	return $string1;
+}
+  
 /**
  * Show all custom fields for this post.
  *
