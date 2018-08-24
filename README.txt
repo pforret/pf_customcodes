@@ -27,10 +27,9 @@ This is the long description.  No limit, and you can use Markdown (as well as in
 
 = What are the shortcodes? =
 
-* [pf_post_taxos]
 * [pf_all_taxos]
 * [pf_all_posts]
-* [pf_post_fields]
+* [pf_post_cfields]
 
 
 == Screenshots ==
